@@ -20,7 +20,7 @@ public static class SceneCreator
     private static Font GetDefaultFont()
     {
         if (_defaultFont == null)
-            _defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            _defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         return _defaultFont;
     }
 
