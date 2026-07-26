@@ -1,18 +1,19 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TMPro;
+using UnityEngine.UI;
 
 /// <summary>
 /// In-game UI: score, combo, game over overlay.
+/// Uses legacy UI.Text for CI compatibility.
 /// </summary>
 public class GameUI : MonoBehaviour
 {
-    public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI comboText;
+    public Text scoreText;
+    public Text comboText;
     public GameObject gameOverPanel;
-    public TextMeshProUGUI finalScoreText;
-    public TextMeshProUGUI highScoreText;
-    public TextMeshProUGUI tapToRestartText;
+    public Text finalScoreText;
+    public Text highScoreText;
+    public Text tapToRestartText;
 
     private void Start()
     {

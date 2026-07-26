@@ -5,7 +5,7 @@ using System.Linq;
 
 /// <summary>
 /// Build script for CI/CD (game-ci).
-/// Usage: unity -batchmode -quit -executeMethod BuildScript.PerformBuild
+/// In CI: first creates all scenes + prefabs, then builds the APK.
 /// </summary>
 public class BuildScript
 {
@@ -15,6 +15,13 @@ public class BuildScript
         "Assets/Scenes/Game.unity",
     };
 
+    [MenuItem("Build/Create Scenes and Prefabs")]
+    public static void CreateScenes()
+    {
+        SceneCreator.CreateAllScenes();
+        Debug.Log("✓ Scenes and prefabs created. You can now build.");
+    }
+
     [MenuItem("Build/Build Android APK")]
     public static void PerformBuild()
     {
@@ -23,12 +30,25 @@ public class BuildScript
 
     public static void PerformBuild(BuildTarget target)
     {
+        // Step 1: Create scenes and prefabs
+        Debug.Log("=== Step 1: Creating scenes and prefabs ===");
+        SceneCreator.CreateAllScenes();
+
+        // Step 2: Build
         string buildPath = GetBuildPath(target);
-        Debug.Log($"Building {target} to {buildPath}");
+        Debug.Log($"=== Step 2: Building {target} → {buildPath} ===");
+
+        string[] validScenes = Scenes.Where(s => System.IO.File.Exists(s)).ToArray();
+        if (validScenes.Length == 0)
+        {
+            Debug.LogError("No scene files found! Scene creation may have failed.");
+            EditorApplication.Exit(1);
+            return;
+        }
 
         BuildPlayerOptions options = new BuildPlayerOptions
         {
-            scenes = Scenes.Where(s => System.IO.File.Exists(s)).ToArray(),
+            scenes = validScenes,
             locationPathName = buildPath,
             target = target,
             options = BuildOptions.None,
@@ -41,6 +61,7 @@ public class BuildScript
             PlayerSettings.Android.bundleVersionCode = 1;
             PlayerSettings.bundleVersion = "1.0";
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.nousresearch.petaldrift");
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
         }
 
         BuildReport report = BuildPipeline.BuildPlayer(options);
@@ -57,7 +78,7 @@ public class BuildScript
         }
         else
         {
-            Debug.Log("Build succeeded!");
+            Debug.Log("✓ Build succeeded!");
         }
     }
 

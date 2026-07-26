@@ -1,14 +1,15 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TMPro;
+using UnityEngine.UI;
 
 /// <summary>
 /// Main menu — title, high score, tap to start.
+/// Uses legacy UI.Text for CI compatibility (no TMP import needed).
 /// </summary>
 public class MainMenu : MonoBehaviour
 {
-    public TextMeshProUGUI highScoreText;
-    public TextMeshProUGUI startText;
+    public Text highScoreText;
+    public Text startText;
 
     private float pulseTime;
 
