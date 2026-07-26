@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 24
+  productGUID: 4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d
+  AndroidTargetAPILevel: 34
+  AndroidMinSdkVersion: 21
+  AndroidTargetSdkVersion: 34
+  androidSupportES2: 0
+  androidSupportVulkan: 1
+  androidSupportedGlEsVersion: 3.0
+  applicationIdentifier:
+    Android: com.nousresearch.petaldrift
+  bundleVersion: 1.0
+  defaultScreenOrientation: 4
+  targetDevice: 1
+  useCustomMainManifest: 0
+  useCustomLauncherManifest: 0
+  useCustomProguardFile: 0
+  ApplicationIdentifier:
+    Android: com.nousresearch.petaldrift
+  cloudProjectId: 00000000-0000-0000-0000-000000000000
+  defaultCursor: {fileID: 0}
+  productName: Petal Drift
+  companyName: Nous Research

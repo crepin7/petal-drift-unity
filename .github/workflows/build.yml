@@ -1,0 +1,45 @@
+name: Build Petal Drift APK
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Setup Unity License
+        uses: game-ci/unity-activate@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+      - name: Build Android APK
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: .
+          targetPlatform: Android
+          buildMethod: BuildScript.PerformBuild
+          androidAppBundle: false
+          androidKeystoreFile: ""
+          androidKeystorePass: ""
+          androidKeyaliasName: ""
+          androidKeyaliasPass: ""
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: petal-drift-android
+          path: Builds/Android/petal-drift.apk
+          if-no-files-found: error
+          retention-days: 30
