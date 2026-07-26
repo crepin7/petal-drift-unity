@@ -20,13 +20,11 @@ jobs:
       - name: Build Android APK
         uses: game-ci/unity-builder@v4
         env:
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
           projectPath: .
           targetPlatform: Android
           buildMethod: BuildScript.PerformBuild
-          androidAppBundle: false
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
