@@ -232,6 +232,10 @@ public static class SceneCreator
         instrRect.pivot = new Vector2(0.5f, 0.5f);
         instrRect.sizeDelta = new Vector2(500, 80);
 
+        // GameManager (DontDestroyOnLoad — persists across scenes)
+        var gmGO = new GameObject("GameManager");
+        gmGO.AddComponent<GameManager>();
+
         // MainMenu controller
         var mmGO = new GameObject("MainMenu");
         var mm = mmGO.AddComponent<MainMenu>();
@@ -366,10 +370,6 @@ public static class SceneCreator
         tapRect.anchorMax = new Vector2(0.5f, 0.3f);
         tapRect.pivot = new Vector2(0.5f, 0.5f);
         tapRect.sizeDelta = new Vector2(400, 60);
-
-        // GameManager (persistent singleton)
-        var gmGO = new GameObject("GameManager");
-        gmGO.AddComponent<GameManager>();
 
         // GameController
         var gcGO = new GameObject("GameController");
