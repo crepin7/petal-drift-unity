@@ -14,6 +14,28 @@ public static class SceneCreator
     private const string MainMenuPath = "Assets/Scenes/MainMenu.unity";
     private const string GameScenePath = "Assets/Scenes/Game.unity";
 
+    // Load default font once — Text components need a non-null font to render
+    private static Font _defaultFont;
+
+    private static Font GetDefaultFont()
+    {
+        if (_defaultFont == null)
+            _defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        return _defaultFont;
+    }
+
+    /// <summary>
+    /// Creates a GameObject with a Text component at the given parent, with proper font assigned.
+    /// </summary>
+    private static Text CreateText(string name, Transform parent)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        var text = go.AddComponent<Text>();
+        text.font = GetDefaultFont();
+        return text;
+    }
+
     /// <summary>
     /// Creates both scenes and registers them in Build Settings.
     /// </summary>
@@ -162,57 +184,49 @@ public static class SceneCreator
         canvasGO.AddComponent<GraphicRaycaster>();
 
         // Title
-        var titleGO = new GameObject("TitleLabel");
-        titleGO.transform.SetParent(canvasGO.transform, false);
-        var titleText = titleGO.AddComponent<Text>();
+        var titleText = CreateText("TitleLabel", canvasGO.transform);
         titleText.text = "Petal Drift";
         titleText.fontSize = 72;
         titleText.alignment = TextAnchor.MiddleCenter;
         titleText.fontStyle = FontStyle.Bold;
         titleText.color = new Color(1f, 0.85f, 0.4f);
-        var titleRect = titleGO.GetComponent<RectTransform>();
+        var titleRect = titleText.GetComponent<RectTransform>();
         titleRect.anchorMin = new Vector2(0.5f, 0.7f);
         titleRect.anchorMax = new Vector2(0.5f, 0.7f);
         titleRect.pivot = new Vector2(0.5f, 0.5f);
         titleRect.sizeDelta = new Vector2(600, 100);
 
         // Start label
-        var startGO = new GameObject("StartLabel");
-        startGO.transform.SetParent(canvasGO.transform, false);
-        var startText = startGO.AddComponent<Text>();
+        var startText = CreateText("StartLabel", canvasGO.transform);
         startText.text = "Tap to Start";
         startText.fontSize = 36;
         startText.alignment = TextAnchor.MiddleCenter;
         startText.color = Color.white;
-        var startRect = startGO.GetComponent<RectTransform>();
+        var startRect = startText.GetComponent<RectTransform>();
         startRect.anchorMin = new Vector2(0.5f, 0.45f);
         startRect.anchorMax = new Vector2(0.5f, 0.45f);
         startRect.pivot = new Vector2(0.5f, 0.5f);
         startRect.sizeDelta = new Vector2(400, 80);
 
         // High score label
-        var hsGO = new GameObject("HighScoreLabel");
-        hsGO.transform.SetParent(canvasGO.transform, false);
-        var hsText = hsGO.AddComponent<Text>();
+        var hsText = CreateText("HighScoreLabel", canvasGO.transform);
         hsText.text = "Best: 0";
         hsText.fontSize = 28;
         hsText.alignment = TextAnchor.MiddleCenter;
         hsText.color = new Color(0.7f, 0.7f, 0.9f);
-        var hsRect = hsGO.GetComponent<RectTransform>();
+        var hsRect = hsText.GetComponent<RectTransform>();
         hsRect.anchorMin = new Vector2(0.5f, 0.35f);
         hsRect.anchorMax = new Vector2(0.5f, 0.35f);
         hsRect.pivot = new Vector2(0.5f, 0.5f);
         hsRect.sizeDelta = new Vector2(400, 60);
 
         // Instructions
-        var instrGO = new GameObject("Instructions");
-        instrGO.transform.SetParent(canvasGO.transform, false);
-        var instrText = instrGO.AddComponent<Text>();
+        var instrText = CreateText("Instructions", canvasGO.transform);
         instrText.text = "Left side ← → Right side\nRelease to float";
         instrText.fontSize = 22;
         instrText.alignment = TextAnchor.MiddleCenter;
         instrText.color = new Color(0.5f, 0.5f, 0.7f);
-        var instrRect = instrGO.GetComponent<RectTransform>();
+        var instrRect = instrText.GetComponent<RectTransform>();
         instrRect.anchorMin = new Vector2(0.5f, 0.15f);
         instrRect.anchorMax = new Vector2(0.5f, 0.15f);
         instrRect.pivot = new Vector2(0.5f, 0.5f);
@@ -278,15 +292,13 @@ public static class SceneCreator
         canvasGO.AddComponent<GraphicRaycaster>();
 
         // Score (top-left)
-        var scoreGO = new GameObject("ScoreText");
-        scoreGO.transform.SetParent(canvasGO.transform, false);
-        var scoreText = scoreGO.AddComponent<Text>();
+        var scoreText = CreateText("ScoreText", canvasGO.transform);
         scoreText.text = "0";
         scoreText.fontSize = 48;
         scoreText.alignment = TextAnchor.UpperLeft;
         scoreText.fontStyle = FontStyle.Bold;
         scoreText.color = Color.white;
-        var scoreRect = scoreGO.GetComponent<RectTransform>();
+        var scoreRect = scoreText.GetComponent<RectTransform>();
         scoreRect.anchorMin = new Vector2(0, 1);
         scoreRect.anchorMax = new Vector2(0, 1);
         scoreRect.pivot = new Vector2(0, 1);
@@ -294,15 +306,13 @@ public static class SceneCreator
         scoreRect.sizeDelta = new Vector2(200, 80);
 
         // Combo (center)
-        var comboGO = new GameObject("ComboText");
-        comboGO.transform.SetParent(canvasGO.transform, false);
-        var comboText = comboGO.AddComponent<Text>();
+        var comboText = CreateText("ComboText", canvasGO.transform);
         comboText.text = "";
         comboText.fontSize = 72;
         comboText.alignment = TextAnchor.MiddleCenter;
         comboText.fontStyle = FontStyle.Bold;
         comboText.color = new Color(1f, 0.85f, 0.4f);
-        var comboRect = comboGO.GetComponent<RectTransform>();
+        var comboRect = comboText.GetComponent<RectTransform>();
         comboRect.anchorMin = new Vector2(0.5f, 0.5f);
         comboRect.anchorMax = new Vector2(0.5f, 0.5f);
         comboRect.pivot = new Vector2(0.5f, 0.5f);
@@ -321,43 +331,37 @@ public static class SceneCreator
         panelGO.SetActive(false);
 
         // Final score label
-        var finalGO = new GameObject("FinalScoreLabel");
-        finalGO.transform.SetParent(panelGO.transform, false);
-        var finalText = finalGO.AddComponent<Text>();
+        var finalText = CreateText("FinalScoreLabel", panelGO.transform);
         finalText.text = "Score: 0";
         finalText.fontSize = 52;
         finalText.alignment = TextAnchor.MiddleCenter;
         finalText.fontStyle = FontStyle.Bold;
         finalText.color = Color.white;
-        var finalRect = finalGO.GetComponent<RectTransform>();
+        var finalRect = finalText.GetComponent<RectTransform>();
         finalRect.anchorMin = new Vector2(0.5f, 0.6f);
         finalRect.anchorMax = new Vector2(0.5f, 0.6f);
         finalRect.pivot = new Vector2(0.5f, 0.5f);
         finalRect.sizeDelta = new Vector2(500, 80);
 
         // High score label (game over)
-        var hsGO = new GameObject("HighScoreLabel");
-        hsGO.transform.SetParent(panelGO.transform, false);
-        var hsText = hsGO.AddComponent<Text>();
+        var hsText = CreateText("HighScoreLabel", panelGO.transform);
         hsText.text = "Best: 0";
         hsText.fontSize = 32;
         hsText.alignment = TextAnchor.MiddleCenter;
         hsText.color = new Color(1f, 0.85f, 0.4f);
-        var hsRect = hsGO.GetComponent<RectTransform>();
+        var hsRect = hsText.GetComponent<RectTransform>();
         hsRect.anchorMin = new Vector2(0.5f, 0.45f);
         hsRect.anchorMax = new Vector2(0.5f, 0.45f);
         hsRect.pivot = new Vector2(0.5f, 0.5f);
         hsRect.sizeDelta = new Vector2(400, 60);
 
         // Tap to restart
-        var tapGO = new GameObject("TapToRestart");
-        tapGO.transform.SetParent(panelGO.transform, false);
-        var tapText = tapGO.AddComponent<Text>();
+        var tapText = CreateText("TapToRestart", panelGO.transform);
         tapText.text = "Tap to Restart";
         tapText.fontSize = 30;
         tapText.alignment = TextAnchor.MiddleCenter;
         tapText.color = Color.white;
-        var tapRect = tapGO.GetComponent<RectTransform>();
+        var tapRect = tapText.GetComponent<RectTransform>();
         tapRect.anchorMin = new Vector2(0.5f, 0.3f);
         tapRect.anchorMax = new Vector2(0.5f, 0.3f);
         tapRect.pivot = new Vector2(0.5f, 0.5f);
