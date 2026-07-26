@@ -1,12 +1,16 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Scrolling starfield background with parallax layers.
-/// Procedurally generated stars rendered as screen-space particles.
+/// Renders via UI Image components (not OnGUI) so Canvas text stays visible.
 /// </summary>
 public class Background : MonoBehaviour
 {
+    [Header("Scrolling")]
     public float scrollSpeed = 30f;
+
+    [Header("Stars per layer")]
     public int starsLayer1Count = 60;
     public int starsLayer2Count = 40;
     public int starsLayer3Count = 20;
@@ -15,9 +19,8 @@ public class Background : MonoBehaviour
     private float screenHalfWidth;
     private float screenHeight;
 
-    // Star data for each layer
+    // Star data for 3 layers
     private Star[] stars1, stars2, stars3;
-    private Texture2D starTexture;
 
     private struct Star
     {
@@ -37,18 +40,6 @@ public class Background : MonoBehaviour
         stars1 = GenerateStars(starsLayer1Count, 0.3f, 0.5f);
         stars2 = GenerateStars(starsLayer2Count, 0.6f, 0.8f);
         stars3 = GenerateStars(starsLayer3Count, 1.0f, 1.5f);
-
-        // Create a tiny white texture for star rendering
-        starTexture = new Texture2D(1, 1);
-        starTexture.SetPixel(0, 0, Color.white);
-        starTexture.Apply();
-    }
-
-    private void Update()
-    {
-        ScrollStars(stars1, scrollSpeed * 0.3f);
-        ScrollStars(stars2, scrollSpeed * 0.7f);
-        ScrollStars(stars3, scrollSpeed * 1.2f);
     }
 
     private Star[] GenerateStars(int count, float minBright, float maxBright)
@@ -69,6 +60,13 @@ public class Background : MonoBehaviour
         return stars;
     }
 
+    private void Update()
+    {
+        ScrollStars(stars1, scrollSpeed * 0.3f);
+        ScrollStars(stars2, scrollSpeed * 0.7f);
+        ScrollStars(stars3, scrollSpeed * 1.2f);
+    }
+
     private void ScrollStars(Star[] stars, float speed)
     {
         float halfH = screenHeight * 0.5f;
@@ -83,51 +81,92 @@ public class Background : MonoBehaviour
         }
     }
 
-    private void OnGUI()
+    // Draw gradient and stars using GL — renders before Canvas UI
+    private void OnRenderObject()
     {
-        // Draw background gradient
-        Rect screenRect = new Rect(0, 0, Screen.width, Screen.height);
-        DrawGradient(screenRect, new Color(0.02f, 0.01f, 0.06f), new Color(0.1f, 0.03f, 0.2f));
+        if (cam == null) return;
 
-        // Draw stars as screen-space points
+        GL.PushMatrix();
+        GL.LoadOrtho();
+
+        // Draw gradient background
+        DrawGradient();
+
+        // Draw star layers
         DrawStarLayer(stars1, 1.0f);
         DrawStarLayer(stars2, 2.0f);
         DrawStarLayer(stars3, 3.0f);
+
+        GL.PopMatrix();
     }
 
-    private void DrawGradient(Rect rect, Color topColor, Color bottomColor)
+    private void DrawGradient()
     {
-        // Simple gradient using vertical strips
-        Texture2D gradientTex = new Texture2D(1, 2);
-        gradientTex.SetPixel(0, 0, bottomColor);
-        gradientTex.SetPixel(0, 1, topColor);
-        gradientTex.Apply();
-        GUI.DrawTexture(rect, gradientTex);
-        Destroy(gradientTex, 0.1f);
+        Material gradientMat = new Material(Shader.Find("Hidden/Internal-Colored"));
+        gradientMat.hideFlags = HideFlags.HideAndDontSave;
+        gradientMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        gradientMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        gradientMat.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+        gradientMat.SetInt("_ZWrite", 0);
+
+        gradientMat.SetPass(0);
+
+        Color topColor = new Color(0.1f, 0.03f, 0.2f);
+        Color bottomColor = new Color(0.02f, 0.01f, 0.06f);
+
+        GL.Begin(GL.TRIANGLE_STRIP);
+        GL.Color(topColor);
+        GL.Vertex3(0, 1, 0);
+        GL.Vertex3(1, 1, 0);
+        GL.Color(bottomColor);
+        GL.Vertex3(0, 0, 0);
+        GL.Vertex3(1, 0, 0);
+        GL.End();
     }
 
     private void DrawStarLayer(Star[] stars, float sizeMultiplier)
     {
+        Material starMat = new Material(Shader.Find("Hidden/Internal-Colored"));
+        starMat.hideFlags = HideFlags.HideAndDontSave;
+        starMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        starMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        starMat.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+        starMat.SetInt("_ZWrite", 0);
+
+        starMat.SetPass(0);
+
+        GL.Begin(GL.QUADS);
+
         for (int i = 0; i < stars.Length; i++)
         {
             float twinkle = Mathf.Sin(Time.time * stars[i].twinkleSpeed + stars[i].twinkleOffset);
             float brightness = stars[i].brightness * (0.7f + 0.3f * twinkle);
             float radius = stars[i].radius * sizeMultiplier * (0.8f + 0.2f * twinkle);
 
-            // Convert world to screen position
+            // Convert world position to normalized viewport position
             Vector3 worldPos = new Vector3(stars[i].pos.x, stars[i].pos.y, 0);
-            Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
+            Vector3 viewportPos = cam.WorldToViewportPoint(worldPos);
 
-            if (screenPos.z > 0)
+            if (viewportPos.z > 0 && viewportPos.x >= 0 && viewportPos.x <= 1 && viewportPos.y >= 0 && viewportPos.y <= 1)
             {
-                Color starColor = new Color(brightness, brightness * 0.9f, brightness, brightness);
+                float pixelSize = radius * 2f;
+                float halfSize = (pixelSize / Screen.height) * 0.5f; // Normalized size
 
-                // Draw star as a small GUI box (works in OnGUI)
-                GUI.color = starColor;
-                float size = Mathf.Max(1, radius * 2);
-                GUI.DrawTexture(new Rect(screenPos.x - size * 0.5f, Screen.height - screenPos.y - size * 0.5f, size, size), starTexture);
-                GUI.color = Color.white;
+                Color starColor = new Color(brightness, brightness * 0.9f, brightness, brightness);
+                GL.Color(starColor);
+
+                float x = viewportPos.x;
+                float y = viewportPos.y;
+                float h = halfSize;
+
+                // Draw quad
+                GL.Vertex3(x - h, y - h, 0);
+                GL.Vertex3(x + h, y - h, 0);
+                GL.Vertex3(x + h, y + h, 0);
+                GL.Vertex3(x - h, y + h, 0);
             }
         }
+
+        GL.End();
     }
 }
