@@ -1,9 +1,8 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// Scrolling starfield background with parallax layers.
-/// Renders via UI Image components (not OnGUI) so Canvas text stays visible.
+/// Renders via GL in OnRenderObject (not OnGUI) so Canvas text stays visible.
 /// </summary>
 public class Background : MonoBehaviour
 {
